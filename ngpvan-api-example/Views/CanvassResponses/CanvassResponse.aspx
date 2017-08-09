@@ -19,31 +19,41 @@
                 <%= Html.Label("VANID", new { @class="editor-label-subheader"}) %><br/>
                 <%= Html.TextBox("vanId", Model.VanId, new {@class = "editor-field", @readonly = "readonly"}) %> <br/>  
             </p>
+
+            <input type="hidden" name="inputTypeId" value="11"/>
+            
+            <input type="hidden" name="contactTypeId" value="8"/>
+
             
             <p>
-                <%= Html.Label("Input type", new { @class="editor-label"}) %> <%= Html.DropDownList("inputTypeId", Model.InputTypes, new {@class = "editor-field"}) %> <br/>
-                
-                <%= Html.Label("Contact type", new { @class="editor-label"}) %> <%= Html.DropDownList("contactTypeId", new List<SelectListItem>(), new {@class = "editor-field"}) %> <br/>
-                
-                <%= Html.Label("Result code", new { @class="editor-label"}) %> <%= Html.DropDownList("resultCodeId", new List<SelectListItem>(), new {@class = "editor-field"}) %> <br/>
-            </p>
-            
-            <p>
-                <%= Html.Label("Activist code", new { @class="editor-label-subheader"}) %><br/>
-                <%= Html.DropDownList("activistCodeId", Model.ActivistCodes, new {@class = "editor-field"}) %> <br/>
+                <% if (Model.ActivistCodes != null && Model.ActivistCodes.Count > 0)
+                   {
+                        %><%= Html.Label("How you'd like to help", new { @class="editor-label-subheader"}) %><br/><%
+                       foreach (var ac in Model.ActivistCodes)
+                       {
+                           %> <input type="checkbox" name="activistCodeId" value="<%= ac.Value %>"/>
+                            <%= Html.Label(ac.Text) %><br/><%
+                       }
+                   }
+                %>
             </p>
 
             <p>
-                <% if (Model.SurveyQuestions != null && Model.SurveyQuestions.Items.Count > 0)
+                <% if (Model.SurveyQuestions != null && Model.SurveyQuestions.Items != null && Model.SurveyQuestions.Items.Count > 0)
                    { %>
-                    <%= Html.Label("Survey question", new { @class="editor-label-subheader"}) %><br/>
-                    <%    var surveyQuestion = Model.SurveyQuestions.Items[0];
+                    <%= Html.Label("Survey question", new {@class = "editor-label-subheader"}) %><br/>
+                    <% var surveyQuestion = Model.SurveyQuestions.Items[0];
                     %>
                         <%= Html.Hidden("surveyQuestionId", surveyQuestion.SurveyQuestionId, new {@class = "editor-field", @readonly = "readonly"}) %>
-                        <%= Html.Label(surveyQuestion.ScriptQuestion, new { @class="editor-label"}) %><br/>
-                        <%= Html.DropDownList("surveyResponseId", new List<SelectListItem>(surveyQuestion.SurveyResponses.Select(x => new SelectListItem() {Value = x.SurveyResponseId.ToString(), Text = x.Name} )) ) %>
+                        <%= Html.Label(surveyQuestion.ScriptQuestion, new {@class = "editor-label"}) %><br/>
+                        <%= Html.DropDownList("surveyResponseId", new List<SelectListItem>(surveyQuestion.SurveyResponses.Select(x => new SelectListItem() {Value = x.SurveyResponseId.ToString(), Text = x.Name}))) %>
                     <%
-                    } %>
+                   }
+                   else
+                   {
+                    %><input type="hidden" name="surveyQuestionId" value="0"/>
+                      <input type="hidden" name="surveyResponseId" value="0"/><%
+                   }%>
             </p>
             
             <input type="submit" value="Post" />

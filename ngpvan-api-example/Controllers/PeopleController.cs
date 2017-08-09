@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Web.Mvc;
 using ngpvanapi.Models;
@@ -103,8 +104,8 @@ namespace ngpvanapi.Controllers
         }
 
         [HttpPost]
-        public ActionResult PostCanvassResponse(int vanId, int contactTypeId, int inputTypeId, int resultCodeId,
-            int activistCodeId, int surveyQuestionId, int surveyResponseId)
+        public ActionResult PostCanvassResponse(int vanId, int contactTypeId, int inputTypeId, int? resultCodeId,
+            IEnumerable<int> activistCodeId, int surveyQuestionId, int surveyResponseId)
         {
             var canvassResponse = new CanvassResponse
             {
@@ -115,23 +116,33 @@ namespace ngpvanapi.Controllers
                         InputTypeId = inputTypeId,
                         DateCanvassedUtc = DateTime.UtcNow
                     },
-                ResultCodeId = resultCodeId,
-                Responses = new ScriptResponse
-                {
-                    ActivistCode =
-                        new ActivistCodeResponse
-                        {
-                            ActivistCodeId = activistCodeId,
-                            Action = "Apply"
-                        },
-                    SurveyResponse =
-                        new SurveyQuestionResponse
-                        {
-                            SurveyQuestionId = surveyQuestionId,
-                            SurveyResponseId = surveyResponseId
-                        }
-                }
+                ResultCodeId = resultCodeId.HasValue ? resultCodeId.Value : new int?(),
             };
+
+            var responses = new List<ScriptResponse>();
+
+            if (activistCodeId != null)
+            {
+                foreach (var ac in activistCodeId)
+                {
+                    responses.Add(new ActivistCodeResponse
+                    {
+                        ActivistCodeId = ac,
+                        Action = "Apply"
+                    });
+                }
+            }
+
+            if (surveyQuestionId > 0 && surveyResponseId > 0)
+            {
+                responses.Add(new SurveyQuestionResponse
+                {
+                    SurveyQuestionId = surveyQuestionId,
+                    SurveyResponseId = surveyResponseId
+                });
+            }
+
+            canvassResponse.Responses = responses;
 
             var canvassResponseSerialized = JsonConvert.SerializeObject(canvassResponse);
             var result = Helper.Post(string.Format("{0}/{1}/{2}", Action, vanId, "/canvassResponses"),
